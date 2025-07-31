@@ -1,0 +1,9 @@
+{
+  "name": "surfer",
+  "author": {
+    "name": "Ongsalt"
+  },
+  "license": "MIT",
+  "private": true,
+  "workspaces": ["packages/*", "playgrounds/*"]
+}
