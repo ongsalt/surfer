@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { Container } from './core/ioc/container';
-import { inject } from './core/ioc/inject';
+import { Container } from './core/ioc/legacy/container';
+import { inject } from './core/ioc/legacy/inject';
 
 @inject()
 class Example {

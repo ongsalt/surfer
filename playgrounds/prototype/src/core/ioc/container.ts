@@ -1,95 +1,80 @@
-import { INJECT } from "./constant";
+import { AsyncLocalStorage } from "node:async_hooks";
+// TODO: type shi 
+export class IocContainer {
+  #instances = new Map<any, any>();
+  #toInits = new Map<any, () => any>();
+  #als: AsyncLocalStorage<IocContainer>;
+  #parent: IocContainer | undefined;
 
-/*
-Improvement
-- make Key any
--
+  constructor(
+    als: AsyncLocalStorage<IocContainer>,
+    parent?: IocContainer
+  ) {
+    this.#als = als;
+    this.#parent = parent;
+  }
 
-*/
+  get<T>(key: any): T | null {
+    let instance = this.#instances.get(key);
+    if (instance) {
+      return instance as T;
+    }
 
-type Initializer<T = unknown> = (resolver: Resolver) => T;
-export type Constructor<T> = new (...params: any[]) => T;
-// type Key<T> = Constructor<T> | string | symbol
-type Key<T> = Constructor<T>;
+    const init = this.#toInits.get(key);
+    if (init) {
+      instance = init();
+      this.#instances.set(key, instance);
+      return instance as T;
+    }
 
-interface Resolver {
-    make<T = any>(key: new () => T | any): T | undefined;
+    if (this.#parent) {
+      return this.#parent.get(key) as T;
+    }
+
+    return null;
+  }
+
+  bind<T>(key: any, init: () => T) {
+    if (this.#toInits.has(key) || this.#instances.has(key)) {
+      throw new Error(`key ${key} already exist`);
+    }
+    this.#toInits.set(key, init);
+  }
+
+  scoped<T>(run: (container: IocContainer) => T) {
+    const c = new IocContainer(this.#als, this);
+    return this.#als.run(this, async () => await run(c));
+  }
 }
 
-// todo: named instance, singleton
-export class Container implements Resolver {
-    // Literally anything can be threre
-    private instances = new Map<Constructor<unknown>, any>();
-    private initializers = new Map<Constructor<unknown>, Initializer>();
-    private aliases = new Map<any, any>();
+let activeIoc: IocContainer | undefined;
 
-    // todo: auto resolve Class constructor from instance
-    register<T>(key: Constructor<T>, initializer: Initializer<T>) {
-        this.initializers.set(key, initializer);
-    }
+export function createRootIoc() {
+  const als = new AsyncLocalStorage<IocContainer>();
+  const container = new IocContainer(als);
 
-    make<T>(keyOrAlias: Key<T>): T | undefined {
-        // todo: alias lookup
-        const key = keyOrAlias;
-        const instance = this.instances.get(key);
-        if (instance) {
-            return instance;
-        }
-        const initializer = this.initializers.get(key);
-        if (initializer) {
-            // console.log(`[make] initializing ${key.name}`)
-            const instance = initializer(this) as T;
-            this.instances.set(key, instance);
-            return instance;
-        }
-        throw new Error(`Class ${keyOrAlias} not found`);
-    }
+  function provideIoc(run: () => any) {
+    const previous = activeIoc;
+    activeIoc = container;
+    als.run(container, run);
+    activeIoc = previous;
+  }
 
-    bind<T>(clazz: Constructor<T>) {
-        this._bind(clazz, false);
-    }
+  return {
+    container,
+    als,
+    provideIoc
+  };
+}
 
-    singleton<T>(clazz: Constructor<T>) {
-        this._bind(clazz, true);
-    }
+export function getIoc() {
+  return activeIoc;
+}
 
-    private _bind<T>(clazz: Constructor<T>, singleton = false) {
-        if (!this.canBeInjected(clazz)) {
-            throw new Error(`Class ${clazz.name} can not be auto injected.`);
-        }
+export function get<const Key>(key: Key) {
+  if (!activeIoc) {
+    return undefined;
+  }
 
-        const dependencies = this.getDependencies(clazz);
-        // console.log(`[bind] create an initializer for ${clazz.name}`)
-        const initializer = () => {
-            const params = dependencies.map(it => {
-                // todo: alias lookup
-                if (this.instances.has(it) && singleton) {
-                    return this.instances.get(it);
-                } else if (this.initializers.has(it)) {
-                    return this.make(it)!;
-                } else if (this.canBeInjected(it)) {
-                    // recursively bind dependencies
-                    this._bind(it, singleton);
-                    return this.make(it);
-                } else {
-                    if (it.name === "Object") {
-                        throw new Error("Please import entire dependency class instead of 'import type'");
-                    }
-                    throw new Error(`Error while instantiating ${clazz.name}: Dependency of type ${it.name} can not be auto injected.`);
-                }
-            });
-            return new clazz(...params);
-        };
-
-        this.initializers.set(clazz, initializer);
-    }
-
-    private getDependencies(target: any): Constructor<unknown>[] {
-        return Reflect.getMetadata("design:paramtypes", target) ?? [];
-    }
-
-    // we accept both a class and a function 
-    private canBeInjected(target: any): boolean {
-        return !!Reflect.getMetadata(INJECT, target);
-    }
+  return activeIoc.get(key);
 }
