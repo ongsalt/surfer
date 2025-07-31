@@ -1,8 +1,11 @@
 {
-  "name": "surfer",
+  "name": "prototype",
   "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun src/index.ts --watch"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
