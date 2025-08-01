@@ -6,10 +6,8 @@ please use bun
 ## Planning
 - abuse AsyncLocalStorage to create laravel-like facade
   - need some scoping mechanics
-  - autogenerate type declaration too
 - use decorator metadata to do service container (adonis does this i think)
   - might really need to do codegen because experimentalDecorator
-  - auto inject is on pause for now
 - Filament-like form builder but js
   - endpoint
     - crud
