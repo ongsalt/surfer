@@ -32,5 +32,5 @@ export function ioc<const Key>(key: Key) {
     throw new Error(`No ioc context: Please run this under provideIoc`);
   }
 
-  return ioc.get(key);
+  return ioc.get(key) as any;
 }

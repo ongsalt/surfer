@@ -1,23 +1,26 @@
 /*
 So app entry is: http, console, schedule -> console, rpc/ipc stuff??, 
 
-wtf do i want, if this is for client side reactivity we need some kind of observable too 
+wtf do i want, if this is for client app, we need some kind of observable too 
 
 Expected interfaces:
 
-export default defineShit({
-
-})
+export default defineShit({ })
+  
+if this, why ioc then
 
 export default class SomeShit extends Shit {
 
 }
 
+Routes.get("")
+Routes.group("")
+
 */
 
 import Elysia from "elysia";
 import "reflect-metadata";
-import { createRootIoc } from "./core/ioc/api";
+import { createRootIoc, ioc } from "./core/ioc/api";
 import { IocContainer } from "./core/ioc/container";
 import { inject } from "./core/ioc/inject";
 
@@ -43,4 +46,5 @@ provideIoc(() => {
   const a = new Admksdc("kebin");
   const { name } = container.injectFn(a, "ssss");
   console.log({ name });
+  console.log(ioc(Elysia).config)
 });
