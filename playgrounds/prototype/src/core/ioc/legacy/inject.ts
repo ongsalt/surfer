@@ -1,4 +1,4 @@
-import { INJECT } from "./legacy/constant";
+import { INJECT } from "./constant";
 
 export type AutoInjectConfig = {
     name?: string,

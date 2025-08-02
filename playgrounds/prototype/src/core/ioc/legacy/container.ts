@@ -35,7 +35,7 @@ export class Container {
         const initializer = this.initializers.get(key);
         if (initializer) {
             // console.log(`[make] initializing ${key.name}`)
-            const instance = initializer(this) as T;
+            const instance = initializer() as T;
             this.instances.set(key, instance);
             return instance;
         }
@@ -82,7 +82,8 @@ export class Container {
     }
 
     private getDependencies(target: any): Constructor<unknown>[] {
-        return Reflect.getMetadata("design:paramtypes", target) ?? [];
+        const a = Reflect.getMetadata("design:paramtypes", target) ?? [];
+        return a;
     }
 
     // we accept both a class and a function 

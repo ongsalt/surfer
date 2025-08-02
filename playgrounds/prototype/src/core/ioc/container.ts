@@ -1,4 +1,6 @@
 import type { AsyncLocalStorage } from "node:async_hooks";
+import type { Constructor } from "./legacy/container";
+import { getDependencies, isMarkedAsInject } from "./inject";
 // TODO: type shi 
 export class IocContainer {
   #instances = new Map<any, any>();
@@ -69,6 +71,39 @@ export class IocContainer {
     return this;
   }
 
+  make<T>(clazz: Constructor<T>, bind = false): T {
+    if (!isMarkedAsInject(clazz)) {
+      throw new Error(`Class ${clazz.name} is not marked with @inject. (so typescript dont generate runtime type info for it)`);
+    }
+    const dependencies = getDependencies(clazz);
+    const args = [];
+    for (const d of dependencies) {
+      args.push(this.get(d));
+    }
+    const instance = new clazz(...args);
+    if (bind) {
+      this.#instances.set(clazz, instance);
+    }
+    return instance;
+  }
+
+  // TODO: partial inject
+  injectFn<T extends object, const Key extends keyof T>(instance: T, key: Key): T[Key] extends (...args: any) => any ? ReturnType<T[Key]> : never {
+    if (!isMarkedAsInject(instance, key)) {
+      throw new Error(`This class (:${String(key)}) is not marked with @inject. (so typescript dont generate runtime type info for it)`);
+    }
+    if (typeof instance[key] !== 'function') {
+      throw new Error(`${String(key)} is not a function`);
+    }
+    const dependencies = getDependencies(instance, key);
+    const args = [];
+    for (const d of dependencies) {
+      args.push(this.get(d));
+    }
+
+    return instance[key](...args);
+  }
+
   scoped<T>(run: (container: IocContainer) => T, name?: string) {
     const c = new IocContainer(this.#als, this);
     return this.#als.run(this, async () => await run(c));
@@ -82,3 +117,4 @@ export class IocContainer {
     return this;
   }
 }
+
