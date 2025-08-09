@@ -4,7 +4,7 @@ import { getDependencies, isMarkedAsInject } from "./inject";
 // TODO: type shi 
 export class IocContainer {
   #instances = new Map<any, any>();
-  #toInits = new Map<any, () => any>();
+  #toInits = new Map<any, (...args: any[]) => any>();
   #aliases = new Map<any, any>();
   #als: AsyncLocalStorage<IocContainer>;
   #parent: IocContainer | undefined;
@@ -62,7 +62,7 @@ export class IocContainer {
   }
 
 
-  bind<T>(key: any, init: () => T) {
+  bind<T>(key: any, init: (...args: any[]) => T) {
     if (this.#toInits.has(key) || this.#instances.has(key)) {
       throw new Error(`key ${key} already exist`);
     }

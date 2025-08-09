@@ -1,1 +1,0 @@
-export const INJECT = Symbol.for("surfer.ioc.inject")
