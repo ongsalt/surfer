@@ -1,9 +1,10 @@
 import type { AsyncLocalStorage } from "node:async_hooks";
 import { getDependencies, isMarkedAsInject } from "./inject";
+import type { IocRegistry } from "./type";
 
 type Initializer<T = unknown> = () => T;
 export type Constructor<T> = new (...params: any[]) => T;
-type Key<T> = Constructor<T> | string | symbol
+type Key<T> = Constructor<T> | string | symbol;
 
 // TODO: type shi 
 export class IocContainer {
@@ -22,24 +23,24 @@ export class IocContainer {
     this.#parent = parent;
   }
 
-  get<T>(key: any): T {
+  get<const T>(key: T): T extends keyof IocRegistry ? IocRegistry[T] : any {
     if (this.#aliases.has(key)) {
       return this.get(this.#aliases.get(key)!);
     }
 
     if (this.#instances.has(key)) {
-      return this.#instances.get(key)! as T;
+      return this.#instances.get(key)!;
     }
 
     const init = this.#toInits.get(key);
     if (init) {
       const instance = init();
       this.#instances.set(key, instance);
-      return instance as T;
+      return instance;
     }
 
     if (this.#parent) {
-      return this.#parent.get(key) as T;
+      return this.#parent.get(key);
     }
 
     throw new Error(`Key ${key} does not exists`);

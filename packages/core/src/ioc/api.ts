@@ -1,5 +1,6 @@
 import { IocContainer } from "./container";
 import { AsyncLocalStorage } from "node:async_hooks";
+import type { IocRegistry } from "./type";
 
 const als = new AsyncLocalStorage<IocContainer>();
 
@@ -26,7 +27,7 @@ export function getIoc() {
   return ioc;
 }
 
-export function ioc<const Key>(key: Key) {
+export function ioc<const T>(key: T): T extends keyof IocRegistry ? IocRegistry[T] : any {
   const ioc = als.getStore();
   if (!ioc) {
     throw new Error(`No ioc context: Please run this under provideIoc`);

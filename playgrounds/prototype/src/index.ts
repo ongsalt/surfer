@@ -40,9 +40,9 @@ const { als, container, provideIoc } = createRootIoc();
 container.bind(IocContainer, () => container).alias('ioc');
 
 provideIoc(() => {
-  container.bind(Elysia, () => new Elysia());
+  container.bind("elysia", () => new Elysia());
   const a = new Admksdc("kebin");
   const { name } = container.injectFn(a, "ssss");
   console.log({ name });
-  console.log(ioc(Elysia).config)
+  console.log(ioc("elysia").config);
 });
