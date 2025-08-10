@@ -6,8 +6,8 @@ const als = new AsyncLocalStorage<IocContainer>();
 export function createRootIoc() {
   const container = new IocContainer(als);
 
-  function provideIoc(run: () => unknown) {
-    als.run(container, run);
+  function provideIoc<T>(run: () => T) {
+    return als.run(container, run);
   }
 
   return {
