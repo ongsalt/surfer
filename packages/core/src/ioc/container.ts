@@ -1,6 +1,10 @@
 import type { AsyncLocalStorage } from "node:async_hooks";
-import type { Constructor } from "./legacy/container";
 import { getDependencies, isMarkedAsInject } from "./inject";
+
+type Initializer<T = unknown> = () => T;
+export type Constructor<T> = new (...params: any[]) => T;
+type Key<T> = Constructor<T> | string | symbol
+
 // TODO: type shi 
 export class IocContainer {
   #instances = new Map<any, any>();

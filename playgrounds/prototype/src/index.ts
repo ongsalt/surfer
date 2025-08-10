@@ -20,9 +20,7 @@ Routes.group("")
 
 import Elysia from "elysia";
 import "reflect-metadata";
-import { createRootIoc, ioc } from "./core/ioc/api";
-import { IocContainer } from "./core/ioc/container";
-import { inject } from "./core/ioc/inject";
+import { createRootIoc, inject, ioc, IocContainer } from "surfer/ioc";
 
 class Admksdc {
   #name: string;
