@@ -12,11 +12,11 @@ export function createFacade<T extends object>(getInstance: () => T): T {
     getPrototypeOf(target) {
       return Reflect.getPrototypeOf(getInstance());
     },
-    get(target, p, receiver) {
-      return Reflect.get(getInstance(), p, receiver);
+    get(target, p) {
+      return Reflect.get(getInstance(), p);
     },
-    set(target, p, newValue, receiver) {
-      return Reflect.set(getInstance(), p, newValue, receiver);
+    set(target, p, newValue) {
+      return Reflect.set(getInstance(), p, newValue);
     },
     deleteProperty(target, p) {
       return Reflect.deleteProperty(getInstance(), p);
