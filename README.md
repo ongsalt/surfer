@@ -12,6 +12,8 @@ please use bun
 
 ### Not yet
 - use solidjs-like runtime directly to update dom
+  - or just svelte + some router
+- server fn like in tanstack starts
 - Filament-like form builder but js
   - endpoint
     - crud
